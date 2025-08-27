@@ -11,8 +11,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 
-from .utils import load_data, ensure_dirs, MODELS_DIR, RESULTS_DIR
-from .preprocess import basic_clean
+try:
+    # When executed as a module: python -m src.train
+    from .utils import load_data, ensure_dirs, MODELS_DIR, RESULTS_DIR
+    from .preprocess import basic_clean
+except ImportError:
+    # When executed as a script from src/: python src/train.py
+    from utils import load_data, ensure_dirs, MODELS_DIR, RESULTS_DIR
+    from preprocess import basic_clean
 
 
 def build_pipeline() -> Pipeline:
@@ -54,8 +60,19 @@ def main():
     X = df['message'].values
     y = df['label'].values
 
+    # Handle cases where stratified split is not feasible
+    value_counts = df['label'].value_counts()
+    can_stratify = (
+        value_counts.size >= 2 and
+        (value_counts.min() >= 2)
+    )
+
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
+        X,
+        y,
+        test_size=0.2,
+        random_state=42,
+        stratify=y if can_stratify else None,
     )
 
     pipe = build_pipeline()

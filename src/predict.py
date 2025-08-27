@@ -2,7 +2,10 @@ from __future__ import annotations
 from joblib import load
 from pathlib import Path
 
-from utils import MODELS_DIR
+try:
+    from .utils import MODELS_DIR
+except ImportError:
+    from utils import MODELS_DIR
 
 MODEL_PATH = MODELS_DIR / 'spam_classifier.pkl'
 
